@@ -7,5 +7,5 @@ Hardware:
 - LSP-3015
 - NeoPixel Jewel WS2812
 - Slide Switch
-- SON 14500 VR2
+- SON 14500 VR2 <br/>
 ![Diagram](diagram.png)
