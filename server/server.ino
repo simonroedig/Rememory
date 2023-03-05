@@ -50,7 +50,7 @@ void loop() {
   if (switch_value == HIGH && !game_started) {
     apStartedNeopixel(numStation);
 
-    if (startGameCounter == numStation) {
+    if (startGameCounter == numStation && numStation != 0) {
       game_started = true;
     }
     
