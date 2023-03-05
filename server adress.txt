@@ -1,0 +1,5 @@
+http://192.168.4.1:80/ip
+
+
+
+curl -d "message=teeeeeeeeeeeeeeeeest" -X POST http://192.168.4.1:80/ip
