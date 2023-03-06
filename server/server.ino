@@ -1,6 +1,7 @@
 #include "WiFi.h"
 #include "esp_wifi.h"
 #include "WebServer.h"
+#include <Arduino.h>
 
 #define SWITCH_PIN 8
 
@@ -29,6 +30,13 @@ String stationIParr[7]; // array to store IP addresses of connected stations
 int clientCounter = 0;
 int startGameCounter = 0;
 
+String availableColorsArr[7];
+String gameSequenceArr[50];
+bool seqStarted = false;
+int seqCounter = 0;
+String receivedColArr[50];
+int receivedColCounter = 0;
+bool wrongSeqDetected = false;
 
 void setup() {
   Serial.begin(9600);
@@ -41,6 +49,8 @@ void setup() {
 
   server.on("/ip", HTTP_POST, getIPfromClient);
   server.on("/startGame", HTTP_POST, getStartGameFromClient);
+  server.on("/sendCol", HTTP_POST, receiveColor);
+  randomSeed(analogRead(0));
 }
 
 void loop() {
@@ -52,6 +62,7 @@ void loop() {
 
     if (startGameCounter == numStation && numStation != 0) {
       game_started = true;
+      turnOffNeopixel();
     }
     
     if (!ap_started) {
@@ -69,19 +80,84 @@ void loop() {
     Serial.println("Switch turned off ... closing AP");
     WiFi.mode(WIFI_OFF); 
     ap_started = false;
+    game_started = false;
     turnOffNeopixel();
   }
   
+  // main game starts here
   if (ap_started) {
     if (game_started) {
-      //start sequence
+      if (!seqStarted) {
+        delay(2500);
+        //start sequence
+        for (int i = 0; i < numStation; i++) {
+          availableColorsArr[i] = colorStringArr[i];
+        }
+        int randNum = random(numStation); // ran between 0 and numStation-1
+        gameSequenceArr[seqCounter] = availableColorsArr[randNum];
+
+        for (int i = 0; i <= seqCounter; i++) {
+          sequenceNeopixel(gameSequenceArr[i]);
+          delay(1500);
+        }
+        turnOffNeopixel();
+
+        seqCounter++;
+        seqStarted = true;
+      }
+      // check if received sequence is correct
+      if (seqStarted && receivedColCounter == seqCounter) {
+        for (int i = 0; i <= seqCounter - 1; i++) {
+          // Wrong Sequence
+          if (gameSequenceArr[i] != receivedColArr[i]) {
+            sequenceNeopixel("red");
+            delay(500);
+            turnOffNeopixel();
+            delay(500);
+            sequenceNeopixel("red");
+            delay(500);
+            turnOffNeopixel();
+            delay(500);
+            sequenceNeopixel("red");
+            delay(500);
+            turnOffNeopixel();
+            wrongSeqDetected = true;
+            // reset sequence
+            seqCounter = 0;
+            break;
+          }
+        }
+        // Right Sequence
+        if (!wrongSeqDetected) {
+          sequenceNeopixel("green");
+          delay(500);
+          turnOffNeopixel();
+          delay(500);
+          sequenceNeopixel("green");
+          delay(500);
+          turnOffNeopixel();
+          delay(500);
+          sequenceNeopixel("green");
+          delay(500);
+          turnOffNeopixel();
+        }
+        seqStarted = false;
+        receivedColCounter = 0;
+        wrongSeqDetected = false;
+      }
     }
   }
 
 
 
   server.handleClient();
-  delay(1000);
+  delay(500);
+}
+
+void receiveColor() {
+  receivedColArr[receivedColCounter] = server.arg("message");
+  server.send(200, "text/plain", "true");
+  receivedColCounter++;
 }
 
 void getStartGameFromClient() {
@@ -125,3 +201,48 @@ void apStartedNeopixel(int connectedStation) {
     pixel.setPixelColor(i, pixel.Color(0, 0, 0));
   }
 }
+
+void sequenceNeopixel(String color) {
+  if (color == "empty") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(255, 255, 255));
+      pixel.show();
+    }
+  } else if (color == "red") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(255, 0, 0));
+      pixel.show();
+    }
+  } else if (color == "green") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(0, 255, 0));
+      pixel.show();
+    }
+  } else if (color == "blue") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(0, 0, 255));
+      pixel.show();
+    }
+  } else if (color == "orange") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(255, 128, 0));
+      pixel.show();
+    }
+  } else if (color == "pink") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(255, 0, 255));
+      pixel.show();
+    }
+  } else if (color == "turq") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(0, 255, 255));
+      pixel.show();
+    }
+  } else if (color == "yellow") {
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      pixel.setPixelColor(i, pixel.Color(255, 255, 0));
+      pixel.show();
+    }
+  }
+}
+
