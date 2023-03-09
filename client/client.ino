@@ -106,11 +106,11 @@ void loop() {
 
         stationStartedNeopixel(station_started, myColor);
         
-        HTTPClient http;
-        http.begin(serverAddressSendCol);
-        int respCode = http.POST("message=" + myColor);
-        String respBody = http.getString(); 
-        http.end();
+        HTTPClient http3;
+        http3.begin(serverAddressSendCol);
+        int respCode = http3.POST("message=" + myColor);
+        String respBody = http3.getString(); 
+        http3.end();
 
         delay(1500);
         middleNeopixelMode(station_started, myColor);
