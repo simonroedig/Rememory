@@ -81,15 +81,15 @@ void loop() {
       Serial.println(pressure);
       if (pressure >= balloonPressed) {
         Serial.println("Pressure over Treshhold, Start Game will sent to server");
-        HTTPClient http;
-        http.begin(serverAddressStartGame);
-        int respCode = http.POST("message=1");
-        String respBody = http.getString(); // will return true
+        HTTPClient http2;
+        http2.begin(serverAddressStartGame);
+        int respCode = http2.POST("message=1");
+        String respBody = http2.getString(); // will return true
         Serial.println(respBody);
         if (respBody == "true") {
           Serial.println("Start game was sent to server and received true");
           game_started = true;
-          http.end();
+          http2.end();
         } else {
           Serial.println("in game start func, false zweig");
           return;
