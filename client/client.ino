@@ -84,6 +84,7 @@ void loop() {
         http.begin(serverAddressStartGame);
         int respCode = http.POST("message=1");
         String respBody = http.getString(); // will return true
+        Serial.println(respBody);
         if (respBody == "true") {
           Serial.println("Start game was sent to server and received true");
           game_started = true;
