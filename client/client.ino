@@ -68,8 +68,9 @@ void loop() {
     if (!colorReceived) {
       HTTPClient http;
       http.begin(serverAddressIP);
-      Serial.println("The IP-message is: message=" + WiFi.localIP().toString());
-      int respCode = http.POST("message=" + WiFi.localIP().toString());
+      http.addHeader("Content-Type", "text/plain");
+      Serial.println("The IP-message is: " +  WiFi.localIP().toString());
+      int respCode = http.POST(WiFi.localIP().toString());
       myColor = http.getString();
       Serial.println(myColor);
       http.end();
@@ -84,7 +85,8 @@ void loop() {
         Serial.println("Pressure over Treshhold, Start Game will sent to server");
         HTTPClient http2;
         http2.begin(serverAddressStartGame);
-        int respCode = http2.POST("message=1");
+        http2.addHeader("Content-Type", "text/plain");
+        int respCode = http2.POST("1");
         String respBody = http2.getString(); // will return true
         Serial.println(respBody);
         if (respBody == "true") {
@@ -109,7 +111,8 @@ void loop() {
         
         HTTPClient http3;
         http3.begin(serverAddressSendCol);
-        int respCode = http3.POST("message=" + myColor);
+        http3.addHeader("Content-Type", "text/plain");
+        int respCode = http3.POST(myColor);
         String respBody = http3.getString(); 
         http3.end();
 
