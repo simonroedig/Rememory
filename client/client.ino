@@ -11,7 +11,7 @@ Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_RGB + 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 Adafruit_BMP280 bmp; 
-#define balloonPressed 1100.00
+#define balloonPressed 1000.00
 
 const char *ssid = "InstructorBalloon"; 
 const char *password = "instructor_ap"; 
@@ -72,17 +72,20 @@ void loop() {
       myColor = http.getString();
       http.end();
       colorReceived = true;
+      Serial.println("Color Received");
     }
     if (!game_started) {
       float pressure = bmp.readPressure() / 100.0F; // in hPa
       Serial.print("Current Air-Pressure: ");
       Serial.println(pressure);
       if (pressure >= balloonPressed) {
+        Serial.println("Pressure over Treshhold, Start Game will sent to server");
         HTTPClient http;
         http.begin(serverAddressStartGame);
-        int respCode = http.POST("message=" + "1");
+        int respCode = http.POST("message=1");
         String respBody = http.getString(); // will return true
         if (respBody == "true") {
+          Serial.println("Start game was sent to server and received true");
           game_started = true;
           http.end();
         } else {
