@@ -155,20 +155,20 @@ void loop() {
 }
 
 void receiveColor() {
-  receivedColArr[receivedColCounter] = server.arg("message=");
+  receivedColArr[receivedColCounter] = server.arg("plain");
   server.send(200, "text/plain", "true");
   receivedColCounter++;
 }
 
 void getStartGameFromClient() {
-  String received = server.arg("message=");
+  String received = server.arg("plain");
   Serial.println("received startgame with message: " + received);
   server.send(200, "text/plain", "true");
   startGameCounter++;
 }
 
 void getIPfromClient() {
-  stationIParr[clientCounter] = server.arg("message=");
+  stationIParr[clientCounter] = server.arg("plain");
   Serial.println("IP from client is: " + stationIParr[clientCounter]);
 
   for (int i = 0; i < 7; i++) {
