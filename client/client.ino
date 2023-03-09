@@ -70,6 +70,7 @@ void loop() {
       http.begin(serverAddressIP);
       int respCode = http.POST("message=" + WiFi.localIP().toString());
       myColor = http.getString();
+      Serial.println(myColor);
       http.end();
       colorReceived = true;
       Serial.println("Color Received");
@@ -90,6 +91,7 @@ void loop() {
           game_started = true;
           http.end();
         } else {
+          Serial.println("in game start func, false zweig");
           return;
         }
         middleNeopixelMode(station_started, myColor);
