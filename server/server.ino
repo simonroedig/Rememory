@@ -81,6 +81,12 @@ void loop() {
     WiFi.mode(WIFI_OFF); 
     ap_started = false;
     game_started = false;
+    clientCounter = 0;
+    startGameCounter = 0;
+    seqStarted = false;
+    seqCounter = 0;
+    receivedColCounter = 0;
+    wrongSeqDetected = false;
     turnOffNeopixel();
   }
   
