@@ -162,12 +162,14 @@ void receiveColor() {
 
 void getStartGameFromClient() {
   String received = server.arg("message");
+  Serial.println("received startgame with message: " + received);
   server.send(200, "text/plain", "true");
   startGameCounter++;
 }
 
 void getIPfromClient() {
   stationIParr[clientCounter] = server.arg("message");
+  Serial.println("IP from client is: " + stationIParr[clientCounter]);
 
   for (int i = 0; i < 7; i++) {
     Serial.println(stationIParr[i]);
