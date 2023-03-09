@@ -68,6 +68,7 @@ void loop() {
     if (!colorReceived) {
       HTTPClient http;
       http.begin(serverAddressIP);
+      Serial.println("The IP-message is: message=" + WiFi.localIP().toString());
       int respCode = http.POST("message=" + WiFi.localIP().toString());
       myColor = http.getString();
       Serial.println(myColor);
