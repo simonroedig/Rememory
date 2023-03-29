@@ -5,6 +5,8 @@
 
 #define SWITCH_PIN 8
 
+#define PIEZOPIN 4
+
 #include <Adafruit_NeoPixel.h>
 #define NEOPIXEL_PIN 2
 #define NUM_PIXELS 7
@@ -38,6 +40,9 @@ String receivedColArr[50];
 int receivedColCounter = 0;
 bool wrongSeqDetected = false;
 
+bool switchState = true;
+bool switchOnSoundBool = false;
+
 void setup() {
   Serial.begin(9600);
 
@@ -58,6 +63,11 @@ void loop() {
   int numStation = WiFi.softAPgetStationNum();
 
   if (switch_value == HIGH && !game_started) {
+    if (!switchOnSoundBool) {
+      switchOnSoundBool = true;
+      playSound("switchOnSound");
+    }
+    switchState = true;
     apStartedNeopixel(numStation);
 
     if (startGameCounter == numStation && numStation != 0) {
@@ -76,7 +86,10 @@ void loop() {
       ap_started = true;
     }
   }
-  if (switch_value == LOW && ap_started) {
+  if (switch_value == LOW && switchState) {
+    playSound("switchOffSound");
+    switchState = false;
+    switchOnSoundBool = false;
     Serial.println("Switch turned off ... closing AP");
     WiFi.mode(WIFI_OFF); 
     ap_started = false;
@@ -116,6 +129,7 @@ void loop() {
         for (int i = 0; i <= seqCounter - 1; i++) {
           // Wrong Sequence
           if (gameSequenceArr[i] != receivedColArr[i]) {
+            playSound("loosingSound");
             sequenceNeopixel("red");
             delay(500);
             turnOffNeopixel();
@@ -135,6 +149,7 @@ void loop() {
         }
         // Right Sequence
         if (!wrongSeqDetected) {
+          playSound("winningSound");
           sequenceNeopixel("green");
           delay(500);
           turnOffNeopixel();
@@ -153,8 +168,6 @@ void loop() {
       }
     }
   }
-
-
 
   server.handleClient();
   delay(500);
@@ -252,5 +265,84 @@ void sequenceNeopixel(String color) {
       pixel.show();
     }
   }
+  if (color != "empty") {
+    playColorSound(color);
+  }
+}
+
+void playSound(String sound) {
+  if (sound == "winningSound") { // F, A, C, E
+    tone(PIEZOPIN, 349.23, 200); // pin, hz, duration
+    delay(100);
+    tone(PIEZOPIN, 440.00, 200);
+    delay(100);
+    tone(PIEZOPIN, 523.25, 200);
+    delay(100);
+    tone(PIEZOPIN, 698.46, 200);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "loosingSound") { // Bb, F, D, Bd
+    tone(PIEZOPIN, 932.33, 200); // pin, hz, duration
+    delay(100);
+    tone(PIEZOPIN, 698.46, 200);
+    delay(100);
+    tone(PIEZOPIN, 587.33, 200);
+    delay(100);
+    tone(PIEZOPIN, 466.16, 200);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "switchOnSound") {
+    tone(PIEZOPIN, 392, 100);
+    tone(PIEZOPIN, 493.88, 100);
+    tone(PIEZOPIN, 587.33, 150);
+    delay(500);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "switchOffSound") {
+    tone(PIEZOPIN, 587.33, 100);
+    tone(PIEZOPIN, 493.88, 100);
+    tone(PIEZOPIN, 392, 150);
+    delay(500);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "connectionEstablishedSound") {
+    tone(PIEZOPIN, 466.16, 100);
+    tone(PIEZOPIN, 523.25, 100);
+    tone(PIEZOPIN, 698.46, 150);
+    delay(500);
+    noTone(PIEZOPIN);
+  }
+}
+
+void playColorSound(String sound) {
+  if (sound == "red") { // C5
+    tone(PIEZOPIN, 523.25, 200); // pin, hz, duration
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "green") { // E5
+    tone(PIEZOPIN, 659.26, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "blue") { // G5
+    tone(PIEZOPIN, 783.99, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "orange") { // B5
+    tone(PIEZOPIN, 987.77, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "pink") { // D5
+    tone(PIEZOPIN, 587.33, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "turq") { // F5
+    tone(PIEZOPIN, 698.46, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "yellow") { // A5
+    tone(PIEZOPIN, 880.00, 200); 
+    noTone(PIEZOPIN); 
+  
+  } 
 }
 

@@ -3,6 +3,8 @@
 
 #define SWITCH_PIN 8
 
+#define PIEZOPIN 4
+
 #include <Adafruit_NeoPixel.h>
 #define NEOPIXEL_PIN 2
 #define NUM_PIXELS 7
@@ -11,7 +13,7 @@ Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_RGB + 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 Adafruit_BMP280 bmp; 
-#define balloonPressed 1000.00
+float pressure = 1000.00;
 
 const char *ssid = "InstructorBalloon"; 
 const char *password = "instructor_ap"; 
@@ -25,7 +27,8 @@ bool game_started = false;
 String myColor = "empty";
 bool colorReceived = false;
 
-
+bool switchState = true;
+bool switchOnSoundBool = false;
 
 void setup() {
   Serial.begin(9600);
@@ -34,13 +37,18 @@ void setup() {
   WiFi.mode(WIFI_OFF);
 
   bmp.begin(0x76);
-
 }
 
 void loop() {
   int switch_value = digitalRead(SWITCH_PIN);
 
   if (switch_value == HIGH && !game_started) {
+    pressure = bmp.readPressure() / 100.0F;
+    if (!switchOnSoundBool) {
+      switchOnSoundBool = true;
+      playSound("switchOnSound");
+    }
+    switchState = true;
     stationStartedNeopixel(station_started, myColor);
 
     if (!station_started) {
@@ -52,10 +60,14 @@ void loop() {
         Serial.println("Still connecting ...");
       }
       Serial.println("Connection to AP established");
+      playSound("connectionEstablishedSound");
       station_started = true;
     }
   }
-  if (switch_value == LOW && station_started) {
+  if (switch_value == LOW && switchState) {
+    playSound("switchOffSound");
+    switchState = false;
+    switchOnSoundBool = false;
     Serial.println("Switch turned off ... disconnecting from AP");
     WiFi.mode(WIFI_OFF); 
     station_started = false;
@@ -79,10 +91,11 @@ void loop() {
       Serial.println("Color Received");
     }
     if (!game_started) {
-      float pressure = bmp.readPressure() / 100.0F; // in hPa
+      float newPressure = bmp.readPressure() / 100.0F; // in hPa
       Serial.print("Current Air-Pressure: ");
-      Serial.println(pressure);
-      if (pressure >= balloonPressed) {
+      Serial.println(newPressure);
+      if (newPressure - pressure > 10.00) {
+        playColorSound(myColor);
         Serial.println("Pressure over Treshhold, Start Game will sent to server");
         HTTPClient http2;
         http2.begin(serverAddressStartGame);
@@ -103,12 +116,14 @@ void loop() {
     }
     // main game starts here
     if (colorReceived && game_started) {
-      float pressure = bmp.readPressure() / 100.0F; // in hPa
+      float newPressure = bmp.readPressure() / 100.0F; // in hPa
       Serial.print("Current Air-Pressure: ");
-      Serial.println(pressure);
-      if (pressure >= balloonPressed) {
+      Serial.println(newPressure);
+
+      if (newPressure - pressure > 10.00) {
 
         stationStartedNeopixel(station_started, myColor);
+        playColorSound(myColor);
         
         HTTPClient http3;
         http3.begin(serverAddressSendCol);
@@ -243,3 +258,80 @@ void middleNeopixelMode(bool stationConnected, String color) {
     pixel.setPixelColor(i, pixel.Color(0, 0, 0));
   }
 }
+
+void playSound(String sound) {
+  if (sound == "winningSound") { // F, A, C, E
+    tone(PIEZOPIN, 349.23, 200); // pin, hz, duration
+    delay(100);
+    tone(PIEZOPIN, 440.00, 200);
+    delay(100);
+    tone(PIEZOPIN, 523.25, 200);
+    delay(100);
+    tone(PIEZOPIN, 698.46, 200);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "loosingSound") { // Bb, F, D, Bd
+    tone(PIEZOPIN, 932.33, 200); // pin, hz, duration
+    delay(100);
+    tone(PIEZOPIN, 698.46, 200);
+    delay(100);
+    tone(PIEZOPIN, 587.33, 200);
+    delay(100);
+    tone(PIEZOPIN, 466.16, 200);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "switchOnSound") {
+    tone(PIEZOPIN, 392, 100);
+    tone(PIEZOPIN, 493.88, 100);
+    tone(PIEZOPIN, 587.33, 150);
+    delay(500);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "switchOffSound") {
+    tone(PIEZOPIN, 587.33, 100);
+    tone(PIEZOPIN, 493.88, 100);
+    tone(PIEZOPIN, 392, 150);
+    delay(500);
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "connectionEstablishedSound") {
+    tone(PIEZOPIN, 466.16, 100);
+    tone(PIEZOPIN, 523.25, 100);
+    tone(PIEZOPIN, 698.46, 150);
+    delay(500);
+    noTone(PIEZOPIN);
+  }
+}
+
+void playColorSound(String sound) {
+  if (sound == "red") { // C5
+    tone(PIEZOPIN, 523.25, 200); // pin, hz, duration
+    noTone(PIEZOPIN); 
+
+  } else if (sound == "green") { // E5
+    tone(PIEZOPIN, 659.26, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "blue") { // G5
+    tone(PIEZOPIN, 783.99, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "orange") { // B5
+    tone(PIEZOPIN, 987.77, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "pink") { // D5
+    tone(PIEZOPIN, 587.33, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "turq") { // F5
+    tone(PIEZOPIN, 698.46, 200); 
+    noTone(PIEZOPIN); 
+  
+  } else if (sound == "yellow") { // A5
+    tone(PIEZOPIN, 880.00, 200); 
+    noTone(PIEZOPIN); 
+  
+  } 
+}
+
