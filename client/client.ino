@@ -61,7 +61,6 @@ void loop() {
     station_started = false;
     colorReceived = false;
     game_started = false;
-    myColor = "empty";
     turnOffNeopixel();
   }
 
