@@ -10,9 +10,12 @@
 #define NUM_PIXELS 7
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_RGB + NEO_KHZ800);
 
+#define SoundPin 4; 
+
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
-Adafruit_BMP280 bmp; 
+#include <Adafruit_BME280.h>
+Adafruit_BMP280 bmp;
 
 const char *ssid = "InstructorBalloon"; 
 const char *password = "instructor_ap";  
@@ -38,6 +41,8 @@ String receivedColArr[50];
 int receivedColCounter = 0;
 bool wrongSeqDetected = false;
 
+bool switchState = true;
+
 void setup() {
   Serial.begin(9600);
 
@@ -53,11 +58,12 @@ void setup() {
   randomSeed(analogRead(0));
 }
 
-void loop() {
+void loop() {   
   int switch_value = digitalRead(SWITCH_PIN);
   int numStation = WiFi.softAPgetStationNum();
-
+  
   if (switch_value == HIGH && !game_started) {
+    switchState = true;
     apStartedNeopixel(numStation);
 
     if (startGameCounter == numStation && numStation != 0) {
@@ -67,6 +73,7 @@ void loop() {
     
     if (!ap_started) {
       Serial.println("Switch turned on ... starting AP");
+      playSound("switchOnSound");
       WiFi.mode(WIFI_AP);
       WiFi.softAP(ssid, password);
       server.begin();  // Start the server
@@ -76,8 +83,10 @@ void loop() {
       ap_started = true;
     }
   }
-  if (switch_value == LOW && ap_started) {
+  if (switch_value == LOW && switchState) {
+    switchState = false;
     Serial.println("Switch turned off ... closing AP");
+    playSound("switchOffSound");
     WiFi.mode(WIFI_OFF); 
     ap_started = false;
     game_started = false;
@@ -116,6 +125,7 @@ void loop() {
         for (int i = 0; i <= seqCounter - 1; i++) {
           // Wrong Sequence
           if (gameSequenceArr[i] != receivedColArr[i]) {
+            playSound("losingSound");
             sequenceNeopixel("red");
             delay(500);
             turnOffNeopixel();
@@ -135,6 +145,7 @@ void loop() {
         }
         // Right Sequence
         if (!wrongSeqDetected) {
+          playSound("winningSound");
           sequenceNeopixel("green");
           delay(500);
           turnOffNeopixel();
@@ -253,4 +264,44 @@ void sequenceNeopixel(String color) {
     }
   }
 }
+void playSound(String sound){
+  if (sound == "winningSound"){
+    tone(4, 349.23, 200);
+    delay(100 );
+    tone(4, 440.00, 200);
+    delay(100 );
+    tone(4, 523.25 , 200);
+    delay(100 );
+    tone(4, 698.46 , 200);
+    noTone(4); 
+   } else if (sound == "losingSound"){
+     tone(4, 698.46, 400);
+     delay(100);
+     tone(4, 523.25, 400);
+     delay(100);
+     tone(4, 440.00, 400);
+     delay(1000);
+     tone(4, 349.23, 800);
+     delay(100);
+     noTone(4);
+   } else if (sound == "switchOnSound"){
+      tone(4, 392, 100);
+      tone(4, 493.88, 100);
+      tone(4, 587.33, 150);
+      delay(500 );
+      noTone(4); 
+   } else if (sound == "switchOffSound"){
+      tone(4, 587.33, 100);
+      tone(4, 493.88, 100);
+      tone(4, 392, 150);
+      delay(500 );// wait for a second
+      noTone(4); 
+   } else if (sound == "connectionEstablishedSound"){
+      tone(4, 466.16, 100);
+      tone(4, 523.25, 100);
+      tone(4, 698.46, 150);
+      delay(500);
+      noTone(4);
 
+ }
+}
