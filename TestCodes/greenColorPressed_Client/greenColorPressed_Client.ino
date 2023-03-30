@@ -2,7 +2,6 @@
 #include <HTTPClient.h>
 
 #define SWITCH_PIN 8
-
 #define PIEZOPIN 4
 
 #include <Adafruit_NeoPixel.h>
@@ -11,21 +10,11 @@
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_RGB + NEO_KHZ800);
 
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BMP280.h>
-Adafruit_BMP280 bmp; 
+#include <Adafruit_BME280.h>
+Adafruit_BME280 bmp; 
 float pressure = 1000.00;
 
-const char *ssid = "InstructorBalloon"; 
-const char *password = "instructor_ap"; 
-const char* serverAddressIP = "http://192.168.4.1:80/ip";
-const char* serverAddressStartGame = "http://192.168.4.1:80/startGame";
-const char* serverAddressSendCol = "http://192.168.4.1:80/sendCol";
-
-bool station_started = false;
-bool game_started = false;
-
-String myColor = "empty";
-bool colorReceived = false;
+String myColor = "green";
 
 bool switchState = true;
 bool switchOnSoundBool = false;
@@ -42,102 +31,40 @@ void setup() {
 void loop() {
   int switch_value = digitalRead(SWITCH_PIN);
 
-  if (switch_value == HIGH && !game_started) {
-    pressure = bmp.readPressure() / 100.0F;
+  if (switch_value == HIGH) {
     if (!switchOnSoundBool) {
+      pressure = bmp.readPressure() / 100.0F;
       switchOnSoundBool = true;
       playSound("switchOnSound");
     }
     switchState = true;
-    stationStartedNeopixel(station_started, myColor);
 
-    if (!station_started) {
-      Serial.println("Switch turned on ... connecting to AP");
-      WiFi.mode(WIFI_STA);
-      WiFi.begin(ssid, password);
-      while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.println("Still connecting ...");
-      }
-      Serial.println("Connection to AP established");
-      playSound("connectionEstablishedSound");
-      station_started = true;
+    middleNeopixelMode(true, myColor);
+    float newPressure = bmp.readPressure() / 100.0F; // in hPa
+    Serial.print("Current Air-Pressure: ");
+    Serial.println(newPressure);
+    if (newPressure - pressure > 10.00) {
+      stationStartedNeopixel(true, myColor);
+      playColorSound(myColor);
+      delay(1000);
+      middleNeopixelMode(true, myColor);
     }
+    """
+    delay(5000);
+    stationStartedNeopixel(true, myColor);
+    playColorSound(myColor);
+    delay(1000);
+    middleNeopixelMode(true, myColor);
+    """
+    
   }
+
   if (switch_value == LOW && switchState) {
     playSound("switchOffSound");
     switchState = false;
     switchOnSoundBool = false;
-    Serial.println("Switch turned off ... disconnecting from AP");
-    WiFi.mode(WIFI_OFF); 
-    station_started = false;
-    colorReceived = false;
-    game_started = false;
-    myColor = "empty";
     turnOffNeopixel();
   }
-
-  if (station_started) {
-    if (!colorReceived) {
-      HTTPClient http;
-      http.begin(serverAddressIP);
-      http.addHeader("Content-Type", "text/plain");
-      Serial.println("The IP-message is: " +  WiFi.localIP().toString());
-      int respCode = http.POST(WiFi.localIP().toString());
-      myColor = http.getString();
-      Serial.println(myColor);
-      http.end();
-      colorReceived = true;
-      Serial.println("Color Received");
-    }
-    if (!game_started) {
-      float newPressure = bmp.readPressure() / 100.0F; // in hPa
-      Serial.print("Current Air-Pressure: ");
-      Serial.println(newPressure);
-      if (newPressure - pressure > 10.00) {
-        playColorSound(myColor);
-        Serial.println("Pressure over Treshhold, Start Game will sent to server");
-        HTTPClient http2;
-        http2.begin(serverAddressStartGame);
-        http2.addHeader("Content-Type", "text/plain");
-        int respCode = http2.POST("1");
-        String respBody = http2.getString(); // will return true
-        Serial.println(respBody);
-        if (respBody == "true") {
-          Serial.println("Start game was sent to server and received true");
-          game_started = true;
-          http2.end();
-        } else {
-          Serial.println("in game start func, false zweig");
-          return;
-        }
-        middleNeopixelMode(station_started, myColor);
-      }
-    }
-    // main game starts here
-    if (colorReceived && game_started) {
-      float newPressure = bmp.readPressure() / 100.0F; // in hPa
-      Serial.print("Current Air-Pressure: ");
-      Serial.println(newPressure);
-
-      if (newPressure - pressure > 10.00) {
-
-        stationStartedNeopixel(station_started, myColor);
-        playColorSound(myColor);
-        
-        HTTPClient http3;
-        http3.begin(serverAddressSendCol);
-        http3.addHeader("Content-Type", "text/plain");
-        int respCode = http3.POST(myColor);
-        String respBody = http3.getString(); 
-        http3.end();
-
-        delay(1000);
-        middleNeopixelMode(station_started, myColor);
-      }
-    }
-  }
-
 
   delay(500);
 }
