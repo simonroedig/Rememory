@@ -39,24 +39,19 @@ void loop() {
     }
     switchState = true;
 
-    middleNeopixelMode(true, myColor);
-    float newPressure = bmp.readPressure() / 100.0F; // in hPa
-    Serial.print("Current Air-Pressure: ");
-    Serial.println(newPressure);
-    if (newPressure - pressure > 10.00) {
-      stationStartedNeopixel(true, myColor);
-      playColorSound(myColor);
-      delay(1000);
-      middleNeopixelMode(true, myColor);
-    }
-    /*
-    delay(5000);
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    playSound("connectionEstablishedSound");
+    stationStartedNeopixel(true, "empty");
+    delay(3000);
     stationStartedNeopixel(true, myColor);
-    playColorSound(myColor);
-    delay(1000);
-    middleNeopixelMode(true, myColor);
-    */
-
+    delay(8000);
     
   }
 

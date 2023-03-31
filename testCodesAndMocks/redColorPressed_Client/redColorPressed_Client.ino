@@ -49,13 +49,13 @@ void loop() {
       delay(1000);
       middleNeopixelMode(true, myColor);
     }
-    """
+    /*
     delay(5000);
     stationStartedNeopixel(true, myColor);
     playColorSound(myColor);
     delay(1000);
     middleNeopixelMode(true, myColor);
-    """
+    */
 
     
   }

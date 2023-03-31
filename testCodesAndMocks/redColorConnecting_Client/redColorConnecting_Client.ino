@@ -14,7 +14,7 @@ Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_RGB + 
 Adafruit_BME280 bmp; 
 float pressure = 1000.00;
 
-String myColor = "blue";
+String myColor = "red";
 
 bool switchState = true;
 bool switchOnSoundBool = false;
@@ -39,24 +39,19 @@ void loop() {
     }
     switchState = true;
 
-    middleNeopixelMode(true, myColor);
-    float newPressure = bmp.readPressure() / 100.0F; // in hPa
-    Serial.print("Current Air-Pressure: ");
-    Serial.println(newPressure);
-    if (newPressure - pressure > 10.00) {
-      stationStartedNeopixel(true, myColor);
-      playColorSound(myColor);
-      delay(1000);
-      middleNeopixelMode(true, myColor);
-    }
-    /*
-    delay(5000);
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    stationStartedNeopixel(false, "empty");
+    playSound("connectionEstablishedSound");
+    stationStartedNeopixel(true, "empty");
+    delay(3000);
     stationStartedNeopixel(true, myColor);
-    playColorSound(myColor);
-    delay(1000);
-    middleNeopixelMode(true, myColor);
-    */
-
+    delay(8000);
     
   }
 
