@@ -10,8 +10,8 @@
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_RGB + NEO_KHZ800);
 
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-Adafruit_BME280 bmp; 
+#include <Adafruit_BMP280.h>
+Adafruit_BMP280 bmp; 
 float pressure = 1000.00;
 
 String myColor = "red";

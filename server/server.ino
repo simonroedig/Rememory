@@ -154,7 +154,7 @@ void loop() {
   }
 
   server.handleClient();
-  delay(500);
+  // delay(500);
 }
 
 void receiveColor() {

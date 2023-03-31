@@ -56,12 +56,18 @@ void loop() {
       WiFi.mode(WIFI_STA);
       WiFi.begin(ssid, password);
       while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
+        delay(10);
         Serial.println("Still connecting ...");
+        stationStartedNeopixel(station_started, myColor);
+        if (digitalRead(SWITCH_PIN) == LOW) {
+          break;
+        }
       }
-      Serial.println("Connection to AP established");
-      playSound("connectionEstablishedSound");
-      station_started = true;
+      if (digitalRead(SWITCH_PIN) == HIGH) {
+        Serial.println("Connection to AP established");
+        playSound("connectionEstablishedSound");
+        station_started = true;
+      }
     }
   }
   if (switch_value == LOW && switchState) {
@@ -94,7 +100,7 @@ void loop() {
       float newPressure = bmp.readPressure() / 100.0F; // in hPa
       Serial.print("Current Air-Pressure: ");
       Serial.println(newPressure);
-      if (newPressure - pressure > 10.00) {
+      if (newPressure - pressure > 3.00) {
         playColorSound(myColor);
         Serial.println("Pressure over Treshhold, Start Game will sent to server");
         HTTPClient http2;
@@ -120,7 +126,7 @@ void loop() {
       Serial.print("Current Air-Pressure: ");
       Serial.println(newPressure);
 
-      if (newPressure - pressure > 10.00) {
+      if (newPressure - pressure > 3.00) {
 
         stationStartedNeopixel(station_started, myColor);
         playColorSound(myColor);
@@ -139,7 +145,7 @@ void loop() {
   }
 
 
-  delay(500);
+  // delay(500);
 }
 
 void turnOffNeopixel() {
