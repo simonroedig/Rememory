@@ -192,9 +192,41 @@ void turnOffNeopixel() {
 void apStartedNeopixel(int connectedStation) {
   if (connectedStation > 0 && connectedStation <= NUM_PIXELS) {
       for (int i = 0; i < connectedStation; i++) {
-        pixel.setPixelColor(i, pixel.Color(255, 255, 255));
-        pixel.show();
-        delay(100);
+        if (i == 0) {
+          pixel.setPixelColor(i, pixel.Color(0, 255, 0));
+          pixel.show();
+          delay(100);
+        }
+        else if (i == 1) {
+          pixel.setPixelColor(i, pixel.Color(255, 0, 0));
+          pixel.show();
+          delay(100);
+        }
+        else if (i == 2) {
+          pixel.setPixelColor(i, pixel.Color(0, 0, 255));
+          pixel.show();
+          delay(100);
+        }
+        else if (i == 3) {
+          pixel.setPixelColor(i, pixel.Color(60, 255, 0));
+          pixel.show();
+          delay(100);
+        }
+        else if (i == 4) {
+          pixel.setPixelColor(i, pixel.Color(0, 255, 255));
+          pixel.show();
+          delay(100);
+        }
+        else if (i == 5) {
+          pixel.setPixelColor(i, pixel.Color(255, 0, 255));
+          pixel.show();
+          delay(100);
+        }
+        else if (i == 6) {
+          pixel.setPixelColor(i, pixel.Color(255, 255, 0));
+          pixel.show();
+          delay(100);
+        }
       }
     return;
   }
