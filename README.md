@@ -1,5 +1,5 @@
 # Rememory
-> An auditory and visual memory game with balloons.
+> An auditory and visual memory game with balloons:
 > https://youtu.be/5G2V6S5ESQc
 
 Hardware:
