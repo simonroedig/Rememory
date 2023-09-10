@@ -11,4 +11,4 @@ Hardware:
 - SON 14500 VR2
 
 Circuit Diagram: </br>
-![Diagram](diagram.png)
+<img src="diagram.png" alt="Circuit Diagram" width="50%" height="50%">
